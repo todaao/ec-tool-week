@@ -274,6 +274,43 @@ table.pv { border-collapse:collapse; font-size:11px; width:max-content; min-widt
 .wk-tbl tr.total-row td { background:var(--surface2); font-weight:700; }
 .wk-tbl tr:hover td { background:#fafaf8; }
 
+/* ── CHANGE ANALYSIS PANEL ── */
+.change-section{margin-bottom:18px;}
+.change-sec-hd{font-size:12px;font-weight:700;color:var(--text);border-left:3px solid var(--accent);padding-left:8px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+/* ② 変化サマリー */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.summary-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);padding:11px 14px;}
+.summary-col-hd{font-size:11px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.sum-up{color:#16a34a;}.sum-dn{color:#dc2626;}
+.summary-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid var(--border);font-size:11px;}
+.summary-item:last-child{border:none;}
+.si-rank{font-size:10px;font-weight:700;color:var(--text3);min-width:16px;}
+.si-name{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.si-val{font-weight:700;white-space:nowrap;}
+.si-diff{font-size:10px;white-space:nowrap;font-weight:600;}
+.si-moall{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);white-space:nowrap;}
+/* ① ヒートマップ */
+.hm-wrap{overflow-x:auto;}
+.hm-tbl{border-collapse:collapse;font-size:11px;min-width:500px;}
+.hm-tbl th{padding:4px 8px;text-align:center;font-weight:600;color:var(--text3);background:var(--surface2);border:1px solid var(--border);white-space:nowrap;font-size:10px;}
+.hm-tbl th.L{text-align:left;min-width:120px;}
+.hm-tbl td{padding:4px 8px;border:1px solid var(--border);text-align:right;white-space:nowrap;font-size:11px;}
+.hm-tbl td.L{text-align:left;font-weight:600;background:var(--surface);}
+.hm-tbl tr:hover td{filter:brightness(.97);}
+.hm-cell{display:flex;flex-direction:column;align-items:flex-end;gap:1px;border-radius:3px;padding:2px 4px;}
+.hm-val{font-weight:700;}
+.hm-pct{font-size:9px;font-weight:600;}
+/* ③ トレンドアイコン */
+.trend-tbl{border-collapse:collapse;font-size:11px;width:100%;}
+.trend-tbl th{padding:5px 8px;font-weight:600;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface2);}
+.trend-tbl th.L{text-align:left;}
+.trend-tbl td{padding:5px 8px;border-bottom:.5px solid var(--border);}
+.trend-tbl tr:hover td{background:var(--surface2);}
+.trend-icon{font-size:14px;font-weight:700;}
+.ti-up2{color:#16a34a;}.ti-up1{color:#4ade80;}.ti-flat{color:#94a3b8;}.ti-dn1{color:#fb923c;}.ti-dn2{color:#dc2626;}
+.trend-bar-cell{display:flex;align-items:center;gap:5px;}
+.trend-bar-bg{width:60px;height:4px;background:var(--border);border-radius:2px;flex-shrink:0;}
+.trend-bar-fill{height:4px;border-radius:2px;}
 /* ── BUDGET PANEL ── */
 .bg-tbl { border-collapse:collapse; font-size:11px; min-width:700px; }
 .bg-tbl th { background:var(--surface2); padding:6px 10px; text-align:center; font-weight:700; color:var(--text2); border:1px solid var(--border); white-space:nowrap; position:sticky; top:0; z-index:10; }
@@ -357,6 +394,7 @@ table.pv { border-collapse:collapse; font-size:11px; width:max-content; min-widt
     <button class="nav-btn"     onclick="NAV('top10',this)">モール別TOP50</button>
     <button class="nav-btn"     onclick="NAV('newprod',this)">新商品分析</button>
     <button class="nav-btn"     onclick="NAV('weekly',this)">週次トレンド</button>
+    <button class="nav-btn"     onclick="NAV('change',this)">📊 変化分析</button>
     <button class="nav-btn"     onclick="NAV('anomaly',this)">⚡ 異常検知</button>
     <button class="nav-btn"     onclick="NAV('budget',this)">📊 予算進捗</button>
     <button class="nav-btn"     onclick="NAV('pivot',this)">📦 ピボット</button>
@@ -542,6 +580,7 @@ table.pv { border-collapse:collapse; font-size:11px; width:max-content; min-widt
     <button class="chip" onclick="filterNP('hot',this)">📈 伸び型 W2↗</button>
     <button class="chip" onclick="filterNP('cold',this)">▼ 急落確認要</button>
     <button class="chip" onclick="filterNP('qoo',this)">🛍 Qoo10セール重複</button>
+    <button class="chip" onclick="filterNP('lifecycle',this)">🔄 ライフサイクル分類</button>
   </div>
   <div class="np-grid" id="np-grid"></div>
   <div class="note" style="margin-top:10px;">
@@ -598,6 +637,105 @@ table.pv { border-collapse:collapse; font-size:11px; width:max-content; min-widt
     <ul class="ins-l" id="wk-insights">
       <li>データ読み込み後に自動更新されます</li>
     </ul>
+  </div>
+
+  <!-- ⑤ セール除去 実力値推定 -->
+  <div class="sec-hd" style="margin-top:18px;">⑤ セール寄与度除去 ─ 通常週ベースのトレンド（実力値）</div>
+  <div class="chart-box">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;" id="wk-realval-note">セール週を除いた通常週のみを抽出し、本来の売上力を可視化します。</div>
+    <div class="lg" id="wk-realval-leg"></div>
+    <div class="cw" style="height:240px;"><canvas id="wk-realval-chart"></canvas></div>
+    <div class="note" style="margin-top:6px;">灰色点線＝通常週のみの移動平均トレンド。セール週はプロットから除外。</div>
+  </div>
+
+  <!-- ⑥ モール別構成比推移 -->
+  <div class="sec-hd" style="margin-top:18px;">⑥ モール別 売上構成比の推移</div>
+  <div class="chart-box">
+    <div class="lg" id="wk-share-leg"></div>
+    <div class="cw" style="height:240px;"><canvas id="wk-share-chart"></canvas></div>
+    <div class="note" style="margin-top:6px;">週ごとの構成比変化。特定モールへの依存度の増減を把握できます。</div>
+  </div>
+</div>
+
+<!-- 変化分析 -->
+<div id="p-change" class="panel">
+  <!-- ② 変化サマリー -->
+  <div class="change-section">
+    <div class="change-sec-hd">
+      ② 変化サマリー
+      <div style="margin-left:auto;display:flex;gap:4px;">
+        <button class="chip on" id="cs-week-btn" onclick="csSetMode('week',this)" style="font-size:10px;padding:2px 9px;">週次</button>
+        <button class="chip" id="cs-month-btn" onclick="csSetMode('month',this)" style="font-size:10px;padding:2px 9px;">月次</button>
+      </div>
+    </div>
+    <div id="change-summary-note" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div class="summary-grid" id="change-summary-grid">
+      <div class="summary-col"><div class="summary-col-hd sum-up">📈 伸びた TOP5（モール別）</div><div id="cs-up-moall"></div></div>
+      <div class="summary-col"><div class="summary-col-hd sum-dn">📉 落ちた TOP5（モール別）</div><div id="cs-dn-moall"></div></div>
+    </div>
+    <div class="summary-grid" style="margin-top:10px;" id="change-summary-prod">
+      <div style="grid-column:1/-1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text2);">絞り込み：</span>
+        <button class="chip on" id="cs-prod-moall-all" onclick="csProdMoall('all',this)" style="font-size:10px;padding:2px 9px;">すべて</button>
+        <button class="chip" onclick="csProdMoall('Amazon',this)" style="font-size:10px;padding:2px 9px;">Amazon</button>
+        <button class="chip" onclick="csProdMoall('Qoo10',this)" style="font-size:10px;padding:2px 9px;">Qoo10</button>
+        <button class="chip" onclick="csProdMoall('楽天',this)" style="font-size:10px;padding:2px 9px;">楽天</button>
+        <button class="chip" onclick="csProdMoall('ZOZO',this)" style="font-size:10px;padding:2px 9px;">ZOZO</button>
+        <button class="chip" onclick="csProdMoall('TikTok',this)" style="font-size:10px;padding:2px 9px;">TikTok</button>
+        <button class="chip" onclick="csProdMoall('自社EC',this)" style="font-size:10px;padding:2px 9px;">自社EC</button>
+      </div>
+      <div class="summary-col"><div class="summary-col-hd sum-up">📈 伸びた TOP10（商品別）<span id="cs-prod-moall-lbl" style="font-size:10px;font-weight:400;margin-left:4px;color:var(--text3);"></span></div><div id="cs-up-prod"></div></div>
+      <div class="summary-col"><div class="summary-col-hd sum-dn">📉 落ちた TOP10（商品別）<span style="font-size:10px;font-weight:400;margin-left:4px;color:var(--text3);"></span></div><div id="cs-dn-prod"></div></div>
+    </div>
+  </div>
+
+  <!-- ③ トレンド方向アイコン -->
+  <div class="change-section">
+    <div class="change-sec-hd">
+      ③ トレンド方向シグナル
+      <span id="trend-mode-desc" style="font-size:10px;font-weight:400;color:var(--text3);margin-left:4px;"></span>
+      <div style="margin-left:auto;display:flex;gap:4px;">
+        <button class="chip on" id="tr-week-btn" onclick="trSetMode('week',this)" style="font-size:10px;padding:2px 9px;">週次</button>
+        <button class="chip" id="tr-month-btn" onclick="trSetMode('month',this)" style="font-size:10px;padding:2px 9px;">月次</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="chart-box">
+        <div class="sec-hd" id="trend-moall-title" style="margin-bottom:7px;">モール別</div>
+        <div style="overflow-x:auto;">
+          <table class="trend-tbl" id="trend-moall-tbl" style="min-width:420px;">
+            <thead id="trend-moall-head"></thead>
+            <tbody id="trend-moall-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="sec-hd" id="trend-brand-title" style="margin-bottom:7px;">ブランド別</div>
+        <div style="overflow-x:auto;">
+          <table class="trend-tbl" id="trend-brand-tbl" style="min-width:420px;">
+            <thead id="trend-brand-head"></thead>
+            <tbody id="trend-brand-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ① ヒートマップ -->
+  <div class="change-section">
+    <div class="change-sec-hd">
+      ① 前期比ヒートマップ
+      <div style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+        <span style="font-size:10px;color:var(--text3);">比較基準：</span>
+        <button class="chip on" id="hm-week-btn" onclick="hmSetMode('week',this)" style="font-size:10px;padding:2px 9px;">前週比</button>
+        <button class="chip" id="hm-month-btn" onclick="hmSetMode('month',this)" style="font-size:10px;padding:2px 9px;">前月比</button>
+      </div>
+    </div>
+    <div id="hm-note" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div class="hm-wrap">
+      <table class="hm-tbl" id="hm-tbl"></table>
+    </div>
+    <div class="note" style="margin-top:6px;">🟢 緑=改善（前期比高）　🔴 赤=悪化（前期比低）　濃さ＝変化の大きさ。セル内：売上万円 / 前期比%</div>
   </div>
 </div>
 
@@ -1076,6 +1214,7 @@ function NAV(name,btn){
     if(name==='anomaly'){initAnomaly();}
     if(name==='budget'){initBudget();}
     if(name==='pivot'){initPivot();}
+    if(name==='change'){initChange();}
   }
 }
 
@@ -1205,10 +1344,11 @@ function renderDailyCharts(){
 //  TOP10
 // ═══════════════════════════════════════════════
 function initTop10(){
-  const moalls=['Amazon','Qoo10','楽天','ZOZO','TikTok','自社EC'];
+  const moalls=['すべて','Amazon','Qoo10','楽天','ZOZO','TikTok','自社EC'];
   const tb=document.getElementById('top-tabs');
   if(!tb.children.length){
     moalls.forEach((m,i)=>tb.innerHTML+=`<button class="mt${i===0?' on':''}" onclick="swTop('${m}',this)">${m}</button>`);
+    topMoall='すべて';
   }
 }
 function swTop(m,btn){document.querySelectorAll('.mt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');topMoall=m;renderTop10();}
@@ -1222,21 +1362,27 @@ function applyTop10Range(){
 }
 function renderTop10(){
   const agg={};
+  const targetMoalls=topMoall==='すべて'?['Amazon','Qoo10','楽天','ZOZO','TikTok','自社EC','LINE GIFT','Yahoo','TANP','メルカリ']:[topMoall];
   top10Dates.forEach(d=>{
-    const key=d+'_'+topMoall;
-    (DB.prod_lookup[key]||[]).forEach(p=>{
-      const k=p.b+'__'+p.n;
-      if(!agg[k])agg[k]={brand:p.b,name:p.n,v:0};
-      agg[k].v+=p.v;
+    targetMoalls.forEach(m=>{
+      const key=d+'_'+m;
+      (DB.prod_lookup[key]||[]).forEach(p=>{
+        const k=p.b+'__'+p.n;
+        if(!agg[k])agg[k]={brand:p.b,name:p.n,v:0,moalls:new Set()};
+        agg[k].v+=p.v;
+        agg[k].moalls.add(m);
+      });
     });
   });
   const items=Object.values(agg).sort((a,b)=>b.v-a.v).slice(0,50);
   if(!items.length){document.getElementById('top-content').innerHTML='<div class="empty-msg">この期間・モールのデータがありません</div>';return;}
   const maxV=items[0].v;
-  let h=`<table class="rtbl"><thead><tr><th>#</th><th>ブランド</th><th>商品名</th><th style="text-align:right;">売上</th></tr></thead><tbody>`;
+  const showMoall=topMoall==='すべて';
+  let h=`<table class="rtbl"><thead><tr><th>#</th><th>ブランド</th><th>商品名</th>${showMoall?'<th>モール</th>':''}<th style="text-align:right;">売上</th></tr></thead><tbody>`;
   items.forEach((r,i)=>{
     const pct=Math.round(r.v/maxV*100),c=BGC[r.brand]||'#aaa';
-    h+=`<tr><td><span class="rn">${i+1}</span></td><td style="font-size:10px;color:var(--text3);">${r.brand}</td><td><div>${r.name}</div><div class="rb-bg"><div class="rb" style="width:${pct}%;background:${c}"></div></div></td><td style="text-align:right;font-weight:700;">${fmtM(r.v)}</td></tr>`;
+    const moallDots=showMoall?`<td style="white-space:nowrap;">${[...r.moalls].map(m=>`<span style="display:inline-flex;align-items:center;gap:2px;margin-right:3px;font-size:10px;"><span style="width:6px;height:6px;border-radius:50%;background:${MC[m]||'#888'}"></span>${m}</span>`).join('')}</td>`:'';
+    h+=`<tr><td><span class="rn">${i+1}</span></td><td style="font-size:10px;color:var(--text3);">${r.brand}</td><td><div>${r.name}</div><div class="rb-bg"><div class="rb" style="width:${pct}%;background:${c}"></div></div></td>${moallDots}<td style="text-align:right;font-weight:700;">${fmtM(r.v)}</td></tr>`;
   });
   document.getElementById('top-content').innerHTML=h+'</tbody></table>';
 }
@@ -1385,6 +1531,73 @@ function renderWeekly(){
     <li>最高週 ${wkLabels[maxI]}：¥${Math.round(wkTotals[maxI]/10000).toLocaleString()}万</li>
     <li>最低週 ${wkLabels[minI]}：¥${Math.round(wkTotals[minI]/10000).toLocaleString()}万（セール谷間・通常ベースラインの参考値）</li>
     <li>週平均：¥${Math.round(wkTotals.reduce((s,v)=>s+v,0)/wkTotals.length/10000).toLocaleString()}万（${weeks.length}週）</li>`;
+
+  // ⑤ セール除去 実力値チャート
+  if(window._wkRealChart){window._wkRealChart.destroy();}
+  const MAIN6=['Amazon','Qoo10','ZOZO','楽天','TikTok','自社EC'];
+  const normalWeeks=weeks.filter(w=>wkFlag(w)==='none');
+  const saleWeeks=weeks.filter(w=>wkFlag(w)!=='none');
+  const rvNote=document.getElementById('wk-realval-note');
+  rvNote.textContent=`通常週 ${normalWeeks.length}週 / セール週 ${saleWeeks.length}週。灰色点線はセール週を除いた通常週の移動平均トレンド。`;
+  const rvLeg=document.getElementById('wk-realval-leg');rvLeg.innerHTML='';
+  const rvDS=MAIN6.map(m=>{
+    const mi=MOALLS.indexOf(m);
+    const c=MC[m]||'#888';
+    rvLeg.innerHTML+=`<span><span class="ld" style="background:${c}"></span>${m}</span>`;
+    return{
+      label:m,
+      data:weeks.map((w,wi)=>flags[wi]==='none'?Math.round(weekMap[w].dm[mi]/10000):null),
+      borderColor:c,backgroundColor:c+'33',fill:true,tension:0.3,pointRadius:3,borderWidth:2,
+      spanGaps:false,
+    };
+  });
+  // 通常週合計のトレンドライン（移動平均）
+  const normalTotals=weeks.map((w,wi)=>flags[wi]==='none'?wkTotals[wi]:null);
+  const maTrend=weeks.map((w,wi)=>{
+    if(flags[wi]!=='none')return null;
+    const prevNorm=[];
+    for(let j=Math.max(0,wi-2);j<=wi;j++){if(flags[j]==='none')prevNorm.push(wkTotals[j]);}
+    return prevNorm.length?Math.round(prevNorm.reduce((s,v)=>s+v,0)/prevNorm.length/10000):null;
+  });
+  rvDS.push({label:'通常週 移動平均',data:maTrend,borderColor:'#888',borderDash:[4,3],backgroundColor:'transparent',fill:false,tension:0.3,pointRadius:0,borderWidth:2,spanGaps:true});
+  rvLeg.innerHTML+='<span><span class="ld" style="background:#888;opacity:.5"></span>通常週MA</span>';
+  window._wkRealChart=new Chart(document.getElementById('wk-realval-chart'),{
+    type:'line',data:{labels:wkLabels,datasets:rvDS},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{
+        title:items=>{const i=items[0].dataIndex;return wkLabels[i]+(flags[i]!=='none'?' [セール週 - 除外]':'');},
+        label:i=>i.raw===null?null:' '+i.dataset.label+': ¥'+i.raw+'万'}}},
+      scales:{x:{ticks:{font:{size:10}},grid:{display:false}},
+        y:{ticks:{font:{size:11},callback:v=>'¥'+v+'万'},grid:{color:'rgba(0,0,0,0.05)'}}}
+    }
+  });
+
+  // ⑥ モール別構成比チャート
+  if(window._wkShareChart){window._wkShareChart.destroy();}
+  const shareLeg=document.getElementById('wk-share-leg');shareLeg.innerHTML='';
+  const shareDS=MAIN6.map(m=>{
+    const mi=MOALLS.indexOf(m);const c=MC[m]||'#888';
+    shareLeg.innerHTML+=`<span><span class="ld" style="background:${c}"></span>${m}</span>`;
+    return{
+      label:m,
+      data:weeks.map(w=>{
+        const total=weekMap[w].dm.reduce((s,v)=>s+v,0);
+        return total>0?Math.round(weekMap[w].dm[mi]/total*1000)/10:0;
+      }),
+      backgroundColor:c,borderColor:c,fill:true,tension:0,pointRadius:0,borderWidth:0,stack:'share',
+    };
+  });
+  window._wkShareChart=new Chart(document.getElementById('wk-share-chart'),{
+    type:'bar',data:{labels:wkLabels,datasets:shareDS},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{
+        label:i=>' '+i.dataset.label+': '+i.raw+'%'}}},
+      scales:{
+        x:{stacked:true,ticks:{font:{size:10}},grid:{display:false}},
+        y:{stacked:true,max:100,ticks:{font:{size:11},callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
 }
 function switchWeekView(mode,btn){
   document.querySelectorAll('.week-ctrl .chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
@@ -1460,6 +1673,7 @@ const NP_MS={'Amazon':'AMZ','Qoo10':'Q10','楽天':'楽','ZOZO':'ZOZO','TikTok':
 function initNP(){renderNP('all');npInited2=true;}
 function filterNP(f,btn){document.querySelectorAll('#p-newprod .np-filter .chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderNP(f);}
 function renderNP(f){
+  if(f==='lifecycle'){renderLifecycle();return;}
   const items=NP_DATA.filter(p=>f==='all'?true:f==='hot'?p.w2w1&&p.w2w1>=1.2:f==='cold'?p.w2w1&&p.w2w1<0.5:p.qoo_overlap);
   Object.values(npCharts2).forEach(c=>{try{c.destroy();}catch{}});npCharts2={};
   const grid=document.getElementById('np-grid');if(!grid)return;
@@ -1477,6 +1691,64 @@ function renderNP(f){
           scales:{x:{stacked:true,ticks:{font:{size:11}},grid:{display:false}},y:{stacked:true,ticks:{font:{size:10},callback:v=>'¥'+v+'万'},grid:{color:'rgba(0,0,0,0.05)'}}}}});
     },80);
   });
+}
+
+function renderLifecycle(){
+  Object.values(npCharts2).forEach(c=>{try{c.destroy();}catch{}});npCharts2={};
+  const grid=document.getElementById('np-grid');if(!grid)return;
+  // ライフサイクル分類ロジック
+  function classifyLC(p){
+    const w=p.w_totals.filter(v=>v>0);
+    if(w.length<2)return{cls:'launch',label:'🌱 立ち上がり中',color:'#16a34a',bg:'#f0fdf4',border:'#86efac',desc:'データ週数が少なく評価中'};
+    const latest=w[w.length-1],prev=w[w.length-2];
+    const trend=latest/prev;
+    const avg=w.reduce((s,v)=>s+v,0)/w.length;
+    const recent=w.slice(-2).reduce((s,v)=>s+v,0)/2;
+    if(p.w2w1>=1.2&&trend>=0.9)return{cls:'launch',label:'🌱 立ち上がり中',color:'#16a34a',bg:'#f0fdf4',border:'#86efac',desc:`W2/W1=${p.w2w1.toFixed(2)} 継続成長`};
+    if(w.length>=3&&recent/avg>=0.85&&trend>=0.7)return{cls:'stable',label:'🔄 安定',color:'#2563eb',bg:'#eff6ff',border:'#93c5fd',desc:`安定して売れ続けている`};
+    if(trend<0.5||p.w2w1<0.3)return{cls:'tekoiri',label:'🔧 要テコ入れ',color:'#dc2626',bg:'#fff0f0',border:'#fca5a5',desc:`急落 W2/W1=${p.w2w1?p.w2w1.toFixed(2):'−'} 施策が必要`};
+    if(trend<0.8||(w.length>=3&&recent<avg*0.7))return{cls:'decline',label:'📉 衰退',color:'#f59e0b',bg:'#fffbeb',border:'#fcd34d',desc:`売上が徐々に減少中`};
+    return{cls:'stable',label:'🔄 安定',color:'#2563eb',bg:'#eff6ff',border:'#93c5fd',desc:'安定推移'};
+  }
+  const groups={launch:[],stable:[],decline:[],tekoiri:[]};
+  NP_DATA.forEach(p=>{const lc=classifyLC(p);groups[lc.cls].push({p,lc});});
+  const order=[
+    {key:'launch',title:'🌱 立ち上がり中',sub:'成長期 — 継続監視・広告投資の検討を'},
+    {key:'stable',title:'🔄 安定',sub:'収穫期 — 在庫確保・ラインナップ維持'},
+    {key:'decline',title:'📉 衰退',sub:'減速期 — 価格・施策の見直しタイミング'},
+    {key:'tekoiri',title:'🔧 要テコ入れ',sub:'要対処 — 広告・値下げ・取扱見直しを検討'},
+  ];
+  grid.style.gridTemplateColumns='1fr';
+  let html='';
+  order.forEach(({key,title,sub})=>{
+    const items=groups[key];if(!items.length)return;
+    html+=`<div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;margin-bottom:4px;padding:5px 10px;border-radius:6px;background:${items[0].lc.bg};border:1px solid ${items[0].lc.border};color:${items[0].lc.color};">
+        ${title} <span style="font-weight:400;font-size:10px;color:var(--text2);margin-left:8px;">${sub}</span>
+        <span style="margin-left:auto;font-size:11px;float:right;">${items.length}品</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        ${items.map(({p,lc})=>{
+          const w=p.w_totals.filter(v=>v>0);
+          const sparkId='lc_'+p.name.replace(/[^\w]/g,'_').slice(0,16)+'_'+Math.random().toString(36).slice(2,6);
+          setTimeout(()=>{
+            const ctx=document.getElementById(sparkId);if(!ctx)return;
+            npCharts2[sparkId]=new Chart(ctx,{type:'line',
+              data:{labels:p.weeks.slice(0,w.length),datasets:[{data:w.map(v=>Math.round(v/10000)),borderColor:lc.color,backgroundColor:lc.color+'22',fill:true,tension:0.4,pointRadius:3,borderWidth:2}]},
+              options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>'¥'+i.raw+'万'}}},
+                scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9},callback:v=>'¥'+v+'万'},grid:{color:'rgba(0,0,0,.04)'}}}}});
+          },80);
+          return `<div class="np-card" style="border-color:${lc.border};border-left:3px solid ${lc.color};">
+            <div class="np-name" style="color:${lc.color};">${p.name.length>20?p.name.slice(0,20)+'…':p.name}</div>
+            <div class="np-meta"><span style="width:7px;height:7px;border-radius:50%;background:${BGC[p.brand]||'#ccc'};display:inline-block;"></span>${p.brand}　累計${fmtM(p.total)}</div>
+            <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">${lc.desc}</div>
+            <div class="cw" style="height:90px;"><canvas id="${sparkId}"></canvas></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+  grid.innerHTML=html;
 }
 
 init();
@@ -1974,6 +2246,446 @@ function bgSetView(v,btn){
 function initBudget(){
   if(!bgInited){bgInited=true;}
   bgRenderTable(bgView);
+}
+
+// ═══════════════════════════════════════════════
+//  CHANGE ANALYSIS（①ヒートマップ ②変化サマリー ③トレンドシグナル）
+// ═══════════════════════════════════════════════
+let hmMode='week', csMode='week', changeInited=false;
+let csProdMoallFilter='all';
+
+function hmSetMode(m,btn){
+  document.querySelectorAll('#hm-week-btn,#hm-month-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); hmMode=m; renderHeatmap();
+}
+function csSetMode(m,btn){
+  document.querySelectorAll('#cs-week-btn,#cs-month-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); csMode=m; renderChangeSummary();
+}
+function csProdMoall(m,btn){
+  document.querySelectorAll('#change-summary-prod .chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  csProdMoallFilter=m;
+  const lbl=document.getElementById('cs-prod-moall-lbl');
+  if(lbl) lbl.textContent=m==='all'?'':'― '+m+'のみ';
+  renderChangeSummary();
+}
+
+function initChange(){
+  if(!changeInited){ changeInited=true; }
+  renderChangeSummary();
+  renderTrendSignals();
+  renderHeatmap();
+}
+
+// ── 共通：週マップ・月マップ ──
+function getWeekMap(){
+  const wm={};
+  DB.all_dates.forEach((d,i)=>{
+    const dt=new Date(d), diff=(6-dt.getDay()+7)%7;
+    const we=new Date(dt); we.setDate(dt.getDate()+diff);
+    const wk=we.toISOString().slice(0,10);
+    if(!wm[wk]){ wm[wk]={dm:new Array(MOALLS.length).fill(0), db:new Array(BRANDS.length).fill(0)}; }
+    DB.dm_array[i].forEach((v,mi)=>wm[wk].dm[mi]+=v);
+    DB.db_array[i].forEach((v,gi)=>wm[wk].db[gi]+=v);
+  });
+  return wm;
+}
+function getMonthMap(){
+  const mm={};
+  DB.all_dates.forEach((d,i)=>{
+    const m=d.slice(0,7);
+    if(!mm[m]){ mm[m]={dm:new Array(MOALLS.length).fill(0), db:new Array(BRANDS.length).fill(0)}; }
+    DB.dm_array[i].forEach((v,mi)=>mm[m].dm[mi]+=v);
+    DB.db_array[i].forEach((v,gi)=>mm[m].db[gi]+=v);
+  });
+  return mm;
+}
+
+// ── ① ヒートマップ ──
+function hmColor(ratio){
+  if(ratio===null||isNaN(ratio)) return {bg:'var(--surface2)',text:'var(--text3)'};
+  const r=ratio-1;
+  if(r>=0.50) return {bg:'#14532d',text:'#fff'};
+  if(r>=0.25) return {bg:'#16a34a',text:'#fff'};
+  if(r>=0.08) return {bg:'#86efac',text:'#166534'};
+  if(r>=-0.08) return {bg:'#f5f4f0',text:'var(--text)'};
+  if(r>=-0.25) return {bg:'#fca5a5',text:'#991b1b'};
+  if(r>=-0.50) return {bg:'#dc2626',text:'#fff'};
+  return {bg:'#7f1d1d',text:'#fff'};
+}
+
+function renderHeatmap(){
+  const MAIN=['Amazon','Qoo10','楽天','ZOZO','TikTok','自社EC'];
+  const tbl=document.getElementById('hm-tbl');
+  const note=document.getElementById('hm-note');
+
+  if(hmMode==='week'){
+    const wm=getWeekMap(); const weeks=Object.keys(wm).sort();
+    const last12=weeks.slice(-12);
+    note.textContent=`直近12週（${last12[0]?.slice(5)}〜${last12[last12.length-1]?.slice(5)}）の前週比ヒートマップ。各セル：売上万円 ／ 前週比（%）`;
+    let h=`<thead><tr><th class="L">モール</th>`;
+    last12.forEach((w,wi)=>{
+      h+=`<th style="min-width:64px;">〜${w.slice(5).replace('-','/')}</th>`;
+    });
+    h+=`</tr></thead><tbody>`;
+    MAIN.forEach(m=>{
+      const mi=MOALLS.indexOf(m); if(mi<0) return;
+      h+=`<tr><td class="L"><span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:50%;background:${MC[m]||'#888'}"></span>${m}</span></td>`;
+      last12.forEach((w,wi)=>{
+        const v=wm[w]?.dm[mi]||0;
+        const prev=wi>0 ? wm[last12[wi-1]]?.dm[mi]||0 : null;
+        const ratio=prev&&prev>0 ? v/prev : null;
+        const {bg,text}=hmColor(ratio);
+        const pct=ratio ? `<span class="hm-pct" style="color:${text};opacity:.85;">${ratio>=1?'▲':'▼'}${Math.round(Math.abs(ratio-1)*100)}%</span>` : '';
+        h+=`<td style="padding:2px;"><div class="hm-cell" style="background:${bg};min-width:60px;"><span class="hm-val" style="color:${text};">${v>0?Math.round(v/10000)+'万':'—'}</span>${pct}</div></td>`;
+      });
+      h+=`</tr>`;
+    });
+    // 合計行
+    h+=`<tr style="border-top:2px solid var(--border2);">`;
+    h+=`<td class="L" style="font-weight:700;background:var(--surface2);">合計</td>`;
+    last12.forEach((w,wi)=>{
+      const v=wm[w]?.dm.reduce((s,x)=>s+x,0)||0;
+      const prev=wi>0 ? wm[last12[wi-1]]?.dm.reduce((s,x)=>s+x,0)||0 : null;
+      const ratio=prev&&prev>0 ? v/prev : null;
+      const {bg,text}=hmColor(ratio);
+      const pct=ratio ? `<span class="hm-pct" style="color:${text};opacity:.85;">${ratio>=1?'▲':'▼'}${Math.round(Math.abs(ratio-1)*100)}%</span>` : '';
+      h+=`<td style="padding:2px;"><div class="hm-cell" style="background:${bg};min-width:60px;font-weight:700;"><span class="hm-val" style="color:${text};">${v>0?Math.round(v/10000)+'万':'—'}</span>${pct}</div></td>`;
+    });
+    h+=`</tr></tbody>`;
+    tbl.innerHTML=h;
+
+  } else {
+    const mm=getMonthMap(); const months=Object.keys(mm).sort();
+    note.textContent='月次前月比ヒートマップ。各セル：売上万円 ／ 前月比（%）';
+    let h=`<thead><tr><th class="L">モール</th>`;
+    months.forEach(m=>h+=`<th>${m.slice(5)}月</th>`);
+    h+=`</tr></thead><tbody>`;
+    MAIN.forEach(mo=>{
+      const mi=MOALLS.indexOf(mo); if(mi<0) return;
+      h+=`<tr><td class="L"><span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:50%;background:${MC[mo]||'#888'}"></span>${mo}</span></td>`;
+      months.forEach((m,mi2)=>{
+        const v=mm[m]?.dm[mi]||0;
+        const prev=mi2>0 ? mm[months[mi2-1]]?.dm[mi]||0 : null;
+        const ratio=prev&&prev>0 ? v/prev : null;
+        const {bg,text}=hmColor(ratio);
+        const pct=ratio ? `<span class="hm-pct" style="color:${text};opacity:.85;">${ratio>=1?'▲':'▼'}${Math.round(Math.abs(ratio-1)*100)}%</span>` : '';
+        h+=`<td style="padding:2px;"><div class="hm-cell" style="background:${bg};min-width:72px;"><span class="hm-val" style="color:${text};">${v>0?Math.round(v/10000)+'万':'—'}</span>${pct}</div></td>`;
+      });
+      h+=`</tr>`;
+    });
+    // 合計行
+    h+=`<tr style="border-top:2px solid var(--border2);">`;
+    h+=`<td class="L" style="font-weight:700;background:var(--surface2);">合計</td>`;
+    months.forEach((m,mi2)=>{
+      const v=mm[m]?.dm.reduce((s,x)=>s+x,0)||0;
+      const prev=mi2>0 ? mm[months[mi2-1]]?.dm.reduce((s,x)=>s+x,0)||0 : null;
+      const ratio=prev&&prev>0 ? v/prev : null;
+      const {bg,text}=hmColor(ratio);
+      const pct=ratio ? `<span class="hm-pct" style="color:${text};opacity:.85;">${ratio>=1?'▲':'▼'}${Math.round(Math.abs(ratio-1)*100)}%</span>` : '';
+      h+=`<td style="padding:2px;"><div class="hm-cell" style="background:${bg};min-width:72px;font-weight:700;"><span class="hm-val" style="color:${text};">${v>0?Math.round(v/10000)+'万':'—'}</span>${pct}</div></td>`;
+    });
+    h+=`</tr></tbody>`;
+    tbl.innerHTML=h;
+  }
+}
+
+// ── ② 変化サマリー ──
+function renderChangeSummary(){
+  const MAIN=['Amazon','Qoo10','楽天','ZOZO','TikTok','自社EC'];
+  const note=document.getElementById('change-summary-note');
+  let upM=[],dnM=[],upP=[],dnP=[];
+
+  // 期間内の商品別集計を prod_lookup から取得（モールフィルタ対応）
+  function getProdMap(dates){
+    const map={};
+    const targetMoalls=csProdMoallFilter==='all' ? MOALLS : [csProdMoallFilter];
+    dates.forEach(d=>{
+      targetMoalls.forEach(m=>{
+        const key=d+'_'+m;
+        (DB.prod_lookup[key]||[]).forEach(p=>{
+          // モールフィルタ指定時はモール単位、全モール時は商品単位で集計
+          const k=csProdMoallFilter==='all' ? p.b+'__'+p.n+'__'+m : p.b+'__'+p.n;
+          if(!map[k]) map[k]={brand:p.b, name:p.n, moall:m, v:0};
+          map[k].v+=p.v;
+        });
+      });
+    });
+    return map;
+  }
+
+  function calcProdChanges(curDates, prevDates){
+    const curMap=getProdMap(curDates);
+    const prevMap=getProdMap(prevDates);
+    const allKeys=new Set([...Object.keys(curMap),...Object.keys(prevMap)]);
+    return [...allKeys].map(k=>{
+      const cur=curMap[k]?.v||0, prev=prevMap[k]?.v||0;
+      if(prev<30000 && cur<30000) return null; // 極小は除外
+      if(prev===0) return null;
+      const item=curMap[k]||prevMap[k];
+      return {brand:item.brand, name:item.name, moall:item.moall, cur, prev, ratio:cur/prev};
+    }).filter(Boolean);
+  }
+
+  if(csMode==='week'){
+    const wm=getWeekMap(); const weeks=Object.keys(wm).sort();
+    if(weeks.length<2){ note.textContent='比較用の週データが不足しています'; return; }
+    const curW=weeks[weeks.length-1], prevW=weeks[weeks.length-2];
+    note.textContent=`今週（〜${curW.slice(5)}）vs 前週（〜${prevW.slice(5)}）`;
+
+    // モール別
+    const moallItems=MAIN.map(m=>{
+      const mi=MOALLS.indexOf(m); if(mi<0) return null;
+      const cur=wm[curW].dm[mi]||0, prev=wm[prevW].dm[mi]||0;
+      if(prev<50000) return null;
+      return {name:m, cur, prev, ratio:cur/prev};
+    }).filter(Boolean);
+    upM=moallItems.filter(x=>x.ratio>=1).sort((a,b)=>b.ratio-a.ratio).slice(0,5);
+    dnM=moallItems.filter(x=>x.ratio<1).sort((a,b)=>a.ratio-b.ratio).slice(0,5);
+
+    // 商品別
+    const curDates=DB.all_dates.filter(d=>{
+      const dt=new Date(d),diff=(6-dt.getDay()+7)%7,we=new Date(dt);we.setDate(dt.getDate()+diff);
+      return we.toISOString().slice(0,10)===curW;
+    });
+    const prevDates=DB.all_dates.filter(d=>{
+      const dt=new Date(d),diff=(6-dt.getDay()+7)%7,we=new Date(dt);we.setDate(dt.getDate()+diff);
+      return we.toISOString().slice(0,10)===prevW;
+    });
+    const prodItems=calcProdChanges(curDates, prevDates);
+    upP=prodItems.filter(x=>x.ratio>=1).sort((a,b)=>b.ratio-a.ratio).slice(0,10);
+    dnP=prodItems.filter(x=>x.ratio<1).sort((a,b)=>a.ratio-b.ratio).slice(0,10);
+
+  } else {
+    const mm=getMonthMap(); const months=Object.keys(mm).sort();
+    if(months.length<2){ note.textContent='比較用の月データが不足しています'; return; }
+    const curM=months[months.length-1], prevM=months[months.length-2];
+    note.textContent=`今月（${curM.slice(5)}月）vs 先月（${prevM.slice(5)}月）`;
+
+    // モール別
+    const moallItems=MAIN.map(m=>{
+      const mi=MOALLS.indexOf(m); if(mi<0) return null;
+      const cur=mm[curM].dm[mi]||0, prev=mm[prevM].dm[mi]||0;
+      if(prev<50000) return null;
+      return {name:m, cur, prev, ratio:cur/prev};
+    }).filter(Boolean);
+    upM=moallItems.filter(x=>x.ratio>=1).sort((a,b)=>b.ratio-a.ratio).slice(0,5);
+    dnM=moallItems.filter(x=>x.ratio<1).sort((a,b)=>a.ratio-b.ratio).slice(0,5);
+
+    // 商品別
+    const curDates=DB.all_dates.filter(d=>d.slice(0,7)===curM);
+    const prevDates=DB.all_dates.filter(d=>d.slice(0,7)===prevM);
+    const prodItems=calcProdChanges(curDates, prevDates);
+    upP=prodItems.filter(x=>x.ratio>=1).sort((a,b)=>b.ratio-a.ratio).slice(0,10);
+    dnP=prodItems.filter(x=>x.ratio<1).sort((a,b)=>a.ratio-b.ratio).slice(0,10);
+  }
+
+  function renderMoallList(id, items, isUp){
+    const el=document.getElementById(id); if(!el) return;
+    if(!items.length){ el.innerHTML='<div style="font-size:11px;color:var(--text3);padding:8px 0;">該当データなし</div>'; return; }
+    el.innerHTML=items.map((x,i)=>{
+      const pct=Math.round(Math.abs(x.ratio-1)*100);
+      const diffM=Math.round((x.cur-x.prev)/10000);
+      const bar=Math.min(100,pct*2);
+      const c=MC[x.name]||'#888';
+      return `<div class="summary-item">
+        <span class="si-rank">${i+1}</span>
+        <span style="width:8px;height:8px;border-radius:50%;background:${c};flex-shrink:0;"></span>
+        <span class="si-moall">${x.name}</span>
+        <span style="flex:1;"></span>
+        <span class="si-val ${isUp?'up':'dn'}">${Math.round(x.cur/10000)}万</span>
+        <span class="si-diff ${isUp?'up':'dn'}">${isUp?'▲':'▼'}${pct}%</span>
+      </div>
+      <div style="height:3px;background:var(--border);border-radius:2px;margin:1px 0 5px 22px;">
+        <div style="height:3px;border-radius:2px;width:${bar}%;background:${isUp?'#16a34a':'#dc2626'};"></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderProdList(id, items, isUp){
+    const el=document.getElementById(id); if(!el) return;
+    if(!items.length){ el.innerHTML='<div style="font-size:11px;color:var(--text3);padding:8px 0;">該当データなし</div>'; return; }
+    const maxVal=Math.max(...items.map(x=>Math.abs(x.cur-x.prev)),1);
+    el.innerHTML=items.map((x,i)=>{
+      const pct=Math.round(Math.abs(x.ratio-1)*100);
+      const diffM=Math.round((x.cur-x.prev)/10000);
+      const bar=Math.min(100,Math.abs(x.cur-x.prev)/maxVal*100);
+      const bc=BGC[x.brand]||'#ccc';
+      const mc=MC[x.moall]||'#888';
+      const nameShort=x.name.length>18?x.name.slice(0,18)+'…':x.name;
+      return `<div class="summary-item" style="align-items:flex-start;gap:5px;">
+        <span class="si-rank" style="margin-top:1px;">${i+1}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:${bc};flex-shrink:0;"></span>
+            <span style="font-size:11px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${nameShort}</span>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:${mc}22;color:${mc};border:1px solid ${mc}44;">${x.moall}</span>
+            <span style="font-size:10px;color:var(--text3);">${x.brand}</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div class="${isUp?'up':'dn'}" style="font-size:11px;font-weight:700;">${isUp?'▲':'▼'}${pct}%</div>
+          <div style="font-size:10px;color:var(--text3);">${Math.round(x.cur/10000)}万</div>
+        </div>
+      </div>
+      <div style="height:3px;background:var(--border);border-radius:2px;margin:2px 0 6px 14px;">
+        <div style="height:3px;border-radius:2px;width:${bar}%;background:${isUp?'#16a34a':'#dc2626'};"></div>
+      </div>`;
+    }).join('');
+  }
+
+  renderMoallList('cs-up-moall',upM,true);
+  renderMoallList('cs-dn-moall',dnM,false);
+  renderProdList('cs-up-prod',upP,true);
+  renderProdList('cs-dn-prod',dnP,false);
+}
+
+// ── ③ トレンドシグナル ──
+function trendIcon(ratio){
+  if(ratio===null||isNaN(ratio)) return {icon:'—', cls:'ti-flat'};
+  if(ratio>=1.3)  return {icon:'↑↑', cls:'ti-up2'};
+  if(ratio>=1.1)  return {icon:'↑',  cls:'ti-up1'};
+  if(ratio>=0.9)  return {icon:'→',  cls:'ti-flat'};
+  if(ratio>=0.7)  return {icon:'↓',  cls:'ti-dn1'};
+  return              {icon:'↓↓', cls:'ti-dn2'};
+}
+
+let trMode='week';
+function trSetMode(m, btn){
+  document.querySelectorAll('#tr-week-btn,#tr-month-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  trMode=m;
+  renderTrendSignals();
+}
+
+function renderTrendSignals(){
+  const MAIN=['Amazon','Qoo10','楽天','ZOZO','TikTok','自社EC'];
+
+  if(trMode==='week'){
+    // 週次：過去4週を1週ずつ並べてトレンドを追う
+    const wm=getWeekMap(); const weeks=Object.keys(wm).sort();
+    const last4=weeks.slice(-4); // [W-3, W-2, W-1, W直近]
+
+    document.getElementById('trend-mode-desc').textContent='過去4週のトレンド推移';
+
+    // ヘッダー生成
+    let headHtml=`<tr><th class="L">名称</th>`;
+    last4.forEach((w,i)=>{
+      const lbl=`〜${w.slice(5).replace('-','/')}`;
+      const isLast=i===last4.length-1;
+      headHtml+=`<th style="${isLast?'background:#e8f0fe;color:#1e3a8a;':''}">${lbl}${isLast?' <span style="font-size:9px;font-weight:400;">(直近)</span>':''}</th>`;
+    });
+    headHtml+=`<th style="background:#f0fdf4;color:#166534;">4週トレンド</th></tr>`;
+
+    function buildWeekRows(items, colorFn){
+      return items.map(({name, color, dmIdx, dbIdx})=>{
+        const vals=last4.map(w=>{
+          if(dmIdx!==undefined) return wm[w]?.dm[dmIdx]||0;
+          return wm[w]?.db[dbIdx]||0;
+        });
+        // 各週の前週比
+        const ratios=vals.map((v,i)=>i===0?null:(vals[i-1]>0?v/vals[i-1]:null));
+        // 4週トレンド：最初の週→最後の週
+        const overallRatio=vals[0]>0?vals[vals.length-1]/vals[0]:null;
+        const {icon:overIcon, cls:overCls}=trendIcon(overallRatio);
+
+        let html=`<tr>
+          <td><span style="display:inline-flex;align-items:center;gap:4px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:${color}"></span>
+            <strong>${name}</strong></span></td>`;
+        vals.forEach((v,i)=>{
+          const ratio=ratios[i];
+          const {icon,cls}=trendIcon(ratio);
+          const isLast=i===last4.length-1;
+          const bg=isLast?'background:#f5f8ff;':'';
+          const pctStr=ratio?`<span class="${cls}" style="font-size:9px;margin-left:2px;">${ratio>=1?'▲':'▼'}${Math.round(Math.abs(ratio-1)*100)}%</span>`:'';
+          html+=`<td style="text-align:right;${bg}">
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+              <span style="font-weight:${isLast?700:400};">${v>0?Math.round(v/10000)+'万':'—'}</span>
+              <span style="display:flex;align-items:center;gap:2px;">${ratio?`<span class="trend-icon ${cls}" style="font-size:11px;">${icon}</span>`:''} ${pctStr}</span>
+            </div>
+          </td>`;
+        });
+        html+=`<td style="text-align:center;background:#f0fdf4;">
+          <span class="trend-icon ${overCls}" style="font-size:16px;">${overIcon}</span>
+          ${overallRatio?`<div style="font-size:9px;" class="${overCls}">${overallRatio>=1?'▲':'▼'}${Math.round(Math.abs(overallRatio-1)*100)}%</div>`:''}
+        </td></tr>`;
+        return html;
+      }).join('');
+    }
+
+    const moallItems=MAIN.map(m=>({name:m, color:MC[m]||'#888', dmIdx:MOALLS.indexOf(m)})).filter(x=>x.dmIdx>=0);
+    const brandItems=BRANDS.map((g,gi)=>({name:g, color:BGC[g]||'#888', dbIdx:gi}));
+
+    document.getElementById('trend-moall-head').innerHTML=headHtml;
+    document.getElementById('trend-brand-head').innerHTML=headHtml.replace('>名称<','>ブランド<');
+    document.getElementById('trend-moall-body').innerHTML=buildWeekRows(moallItems);
+    document.getElementById('trend-brand-body').innerHTML=buildWeekRows(brandItems);
+
+  } else {
+    // 月次：先々月・先月・今月の3ヶ月を並べて変化を表示
+    const mm=getMonthMap(); const months=Object.keys(mm).sort();
+    const last3=months.slice(-3); // [先々月, 先月, 今月]
+    const MN={'01':'1月','02':'2月','03':'3月','04':'4月','05':'5月','06':'6月','07':'7月','08':'8月','09':'9月','10':'10月','11':'11月','12':'12月'};
+
+    document.getElementById('trend-mode-desc').textContent='先々月・先月・今月の推移';
+
+    // ヘッダー生成
+    let headHtml=`<tr><th class="L">名称</th>`;
+    last3.forEach((m,i)=>{
+      const lbl=MN[m.slice(5)]||m.slice(5)+'月';
+      const labels=['先々月','先月','今月'];
+      const isLast=i===last3.length-1;
+      headHtml+=`<th style="${isLast?'background:#e8f0fe;color:#1e3a8a;':''}">${lbl}<br><span style="font-size:9px;font-weight:400;color:${isLast?'#1e3a8a':'var(--text3)'};">${labels[i]||''}</span></th>`;
+    });
+    headHtml+=`<th style="background:#f0fdf4;color:#166534;">先々月→今月</th></tr>`;
+
+    function buildMonthRows(items){
+      return items.map(({name, color, dmIdx, dbIdx})=>{
+        const vals=last3.map(m=>{
+          if(dmIdx!==undefined) return mm[m]?.dm[dmIdx]||0;
+          return mm[m]?.db[dbIdx]||0;
+        });
+        const ratios=vals.map((v,i)=>i===0?null:(vals[i-1]>0?v/vals[i-1]:null));
+        const overallRatio=vals[0]>0?vals[vals.length-1]/vals[0]:null;
+        const {icon:overIcon, cls:overCls}=trendIcon(overallRatio);
+
+        let html=`<tr>
+          <td><span style="display:inline-flex;align-items:center;gap:4px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:${color}"></span>
+            <strong>${name}</strong></span></td>`;
+        vals.forEach((v,i)=>{
+          const ratio=ratios[i];
+          const {icon,cls}=trendIcon(ratio);
+          const isLast=i===last3.length-1;
+          const bg=isLast?'background:#f5f8ff;':'';
+          const pctStr=ratio?`<span class="${cls}" style="font-size:9px;margin-left:2px;">${ratio>=1?'▲':'▼'}${Math.round(Math.abs(ratio-1)*100)}%</span>`:'';
+          html+=`<td style="text-align:right;${bg}">
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+              <span style="font-weight:${isLast?700:400};">${v>0?Math.round(v/10000)+'万':'—'}</span>
+              <span style="display:flex;align-items:center;gap:2px;">${ratio?`<span class="trend-icon ${cls}" style="font-size:11px;">${icon}</span>`:''} ${pctStr}</span>
+            </div>
+          </td>`;
+        });
+        html+=`<td style="text-align:center;background:#f0fdf4;">
+          <span class="trend-icon ${overCls}" style="font-size:16px;">${overIcon}</span>
+          ${overallRatio?`<div style="font-size:9px;" class="${overCls}">${overallRatio>=1?'▲':'▼'}${Math.round(Math.abs(overallRatio-1)*100)}%</div>`:''}
+        </td></tr>`;
+        return html;
+      }).join('');
+    }
+
+    const moallItems=MAIN.map(m=>({name:m, color:MC[m]||'#888', dmIdx:MOALLS.indexOf(m)})).filter(x=>x.dmIdx>=0);
+    const brandItems=BRANDS.map((g,gi)=>({name:g, color:BGC[g]||'#888', dbIdx:gi}));
+
+    document.getElementById('trend-moall-head').innerHTML=headHtml;
+    document.getElementById('trend-brand-head').innerHTML=headHtml.replace('>名称<','>ブランド<');
+    document.getElementById('trend-moall-body').innerHTML=buildMonthRows(moallItems);
+    document.getElementById('trend-brand-body').innerHTML=buildMonthRows(brandItems);
+  }
 }
 
 </script>
